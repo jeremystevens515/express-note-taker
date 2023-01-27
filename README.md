@@ -4,3 +4,13 @@
 
 ## Description
 Note Taker is an application that uses Express.js server-side technology that allows the user to write and save notes for viewing and editing at a later time.
+
+## Installation
+You will need to navigate to the folder that contains the contents of this project via the terminal and enter the command `npm install`. This will install all of the necessary dependencies to run the application locally. Additionally, Node.js must be [downloaded](https://nodejs.org/en/download/) and installed, if it has not already been done.
+
+## Usage
+
+## Screenshot
+
+## Deployment
+[GitHub Pages Deployment](https://jeremystevens515.github.io/express-note-taker/)
