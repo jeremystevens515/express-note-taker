@@ -36,7 +36,7 @@ app.post('/api/notes', (req, res) => {
     };
 
     // this sets the first property of req.body as the value of title, and the second as text
-    const { title, text} = req.body
+    const {title, text} = req.body
 
     // create a new object to be sent back to the front-end and saved in db.json
     const newNote = {
@@ -44,14 +44,32 @@ app.post('/api/notes', (req, res) => {
         text,
         note_id: id.join("")
     };
+    console.log('new note after object created:', newNote)
 
-    fs.appendFile('./db/db.json', JSON.stringify(newNote), (err) => {
-        err ? console.error(err) : console.log("new note appended successfully!")
+    // get data of current DB file, parse (make json string into JS array) data, push new object into array, stringify array, append file with new array
+    fs.readFile('./db/db.json', 'UTF-8', (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        
+        let dbArr = JSON.parse(data) //convert json string into JS array
+        // console.log('after parsing data:', dbArr)
+        dbArr.push(newNote) // push newNote to array
+        // console.log('after pushing newNote: ', dbArr)
+        let newDbArr = JSON.stringify(dbArr) //stringify new array
+        console.log('data to be written: ', newDbArr)
+
+        // append file with new array
+        fs.writeFile('./db/db.json', newDbArr, (err) => {
+            err ? console.error(err) : console.log("db file written successfully!")
+        });
     });
     
-    res.json(newNote);
-    console.log(newNote)
+    // how to send most updated db.json?
+    // currently this is one version behind
+    res.json(db);
 });
+
 
 // activates server on localhost:PORT
 app.listen(PORT, () => {
