@@ -39,31 +39,35 @@ app.post('/api/notes', (req, res) => {
     // this sets the first property of req.body as the value of title, and the second as text
     const {title, text} = req.body
 
-    // create a new object to be sent back to the front-end and saved in db.json
-    const newNote = {
-        title,
-        text,
-        note_id: id.join("")
-    };
-    console.log('new object to be pushed:', newNote)
+    if (title && text && id) {
+        // create a new object to be sent back to the front-end and saved in db.json
+        const newNote = {
+            title,
+            text,
+            note_id: id.join("")
+        };
+        console.log('new object to be pushed:', newNote)
 
-    // get data of current DB file, parse (make json string into JS array) data, push new object into array, stringify array, append file with new array
-    fs.readFile('./db/db.json', 'UTF-8', (err, data) => {
-        if (err) {
-            console.log(err);
-        }
-        
-        let notesArr = JSON.parse(data); //convert json string into JS array
-        notesArr.push(newNote); // push newNote to array
-        
-        let newNotesArr = JSON.stringify(notesArr); //stringify new array
-        console.log('data to be written: ', newNotesArr);
+        // get data of current DB file, parse (make json string into JS array) data, push new object into array, stringify array, append file with new array
+        fs.readFile('./db/db.json', 'UTF-8', (err, data) => {
+            if (err) {
+                console.log(err);
+            }
+            
+            let notesArr = JSON.parse(data); //convert json string into JS array
+            notesArr.push(newNote); // push newNote to array
+            
+            let newNotesArr = JSON.stringify(notesArr, null, 4); //stringify new array
+            console.log('data to be written: ', newNotesArr);
 
-        // append file with new array
-        fs.writeFile('./db/db.json', newNotesArr, (err) => {
-            err ? console.error(err) : console.log("db file written successfully!");
+            // append file with new array
+            fs.writeFile('./db/db.json', newNotesArr, (err) => {
+                err ? console.error(err) : console.log("db file written successfully!");
+            });
         });
-    });
+    } else {
+        console.log(`Unable to ${req.method}`)
+    }
 });
 
 app.delete('/api/notes/:id', (req, res) => {
@@ -83,7 +87,7 @@ app.delete('/api/notes/:id', (req, res) => {
             }
         };
         
-        let newNotesArr = JSON.stringify(notesArr)
+        let newNotesArr = JSON.stringify(notesArr, null, 4)
         console.log('data to be written: ', newNotesArr);
 
         fs.writeFile('./db/db.json', newNotesArr, (err) => {
