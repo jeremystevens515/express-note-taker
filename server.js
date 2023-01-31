@@ -11,11 +11,12 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
 
-// defines homepage
+// defines url to load index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname,'./public/index.html'));
 });
-// defines notes.html
+
+// defines url to load notes.html
 app.get('/notes', (req, res) =>{
     res.sendFile(path.join(__dirname, './public/notes.html'));
 });
@@ -26,7 +27,7 @@ app.get('/api/notes', (req, res) => {
 });
 
 app.post('/api/notes', (req, res) => {
-    // res.send(`${req.method} request received!`)
+    res.send(`${req.method} request received!`)
     console.log(`${req.method} request received!`)
 
     // random number generator to get a string of 5 random numbers to use as the id
@@ -44,32 +45,52 @@ app.post('/api/notes', (req, res) => {
         text,
         note_id: id.join("")
     };
-    console.log('new note after object created:', newNote)
+    console.log('new object to be pushed:', newNote)
 
     // get data of current DB file, parse (make json string into JS array) data, push new object into array, stringify array, append file with new array
     fs.readFile('./db/db.json', 'UTF-8', (err, data) => {
         if (err) {
-            console.log(err)
+            console.log(err);
         }
         
-        let dbArr = JSON.parse(data) //convert json string into JS array
-        // console.log('after parsing data:', dbArr)
-        dbArr.push(newNote) // push newNote to array
-        // console.log('after pushing newNote: ', dbArr)
-        let newDbArr = JSON.stringify(dbArr) //stringify new array
-        console.log('data to be written: ', newDbArr)
+        let notesArr = JSON.parse(data); //convert json string into JS array
+        notesArr.push(newNote); // push newNote to array
+        
+        let newNotesArr = JSON.stringify(notesArr); //stringify new array
+        console.log('data to be written: ', newNotesArr);
 
         // append file with new array
-        fs.writeFile('./db/db.json', newDbArr, (err) => {
-            err ? console.error(err) : console.log("db file written successfully!")
+        fs.writeFile('./db/db.json', newNotesArr, (err) => {
+            err ? console.error(err) : console.log("db file written successfully!");
         });
     });
-    
-    // how to send most updated db.json?
-    // currently this is one version behind
-    res.json(db);
 });
 
+app.delete('/api/notes/:id', (req, res) => {
+    res.send(`${req.method} request received`)
+    console.log(`${req.method} request received`)
+    const idParam = req.params.id
+    // read and parse file
+    fs.readFile('./db/db.json', (err, data) => {
+        let notesArr = JSON.parse(data)
+       
+        // iterate through the array and check for an object with the id that matches req.params.id
+        for (note of notesArr) {
+            // if the note has an id that equals the id of the url parameter
+            if (note.note_id == idParam) {
+                let i = notesArr.indexOf(note); // get the index of that note in the array
+                notesArr.splice(i, 1); // use the index to splice that note from the array
+            }
+        };
+        
+        let newNotesArr = JSON.stringify(notesArr)
+        console.log('data to be written: ', newNotesArr);
+
+        fs.writeFile('./db/db.json', newNotesArr, (err) => {
+            err ? console.error(err) : console.log('deletion complete and db file written')
+        });
+    });
+});
 
 // activates server on localhost:PORT
 app.listen(PORT, () => {
