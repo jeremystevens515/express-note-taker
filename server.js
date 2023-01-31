@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const db = require('./db/db.json');
 
 const app = express();
 const PORT = 3001;
@@ -23,11 +22,13 @@ app.get('/notes', (req, res) =>{
 
 // API routes
 app.get('/api/notes', (req, res) => {
-    res.json(db);
+    fs.readFile('./db/db.json', {encoding: 'utf-8'}, (err, data) => {
+        res.json(JSON.parse(data));
+    });
 });
 
 app.post('/api/notes', (req, res) => {
-    res.send(`${req.method} request received!`)
+    // res.send(`${req.method} request received!`)
     console.log(`${req.method} request received!`)
 
     // random number generator to get a string of 5 random numbers to use as the id
@@ -44,7 +45,7 @@ app.post('/api/notes', (req, res) => {
         const newNote = {
             title,
             text,
-            note_id: id.join("")
+            id: id.join("")
         };
         console.log('new object to be pushed:', newNote)
 
@@ -63,6 +64,7 @@ app.post('/api/notes', (req, res) => {
             // append file with new array
             fs.writeFile('./db/db.json', newNotesArr, (err) => {
                 err ? console.error(err) : console.log("db file written successfully!");
+                res.send("success")
             });
         });
     } else {
@@ -71,7 +73,7 @@ app.post('/api/notes', (req, res) => {
 });
 
 app.delete('/api/notes/:id', (req, res) => {
-    res.send(`${req.method} request received`)
+    // res.send(`${req.method} request received`)
     console.log(`${req.method} request received`)
     const idParam = req.params.id
     // read and parse file
@@ -81,7 +83,7 @@ app.delete('/api/notes/:id', (req, res) => {
         // iterate through the array and check for an object with the id that matches req.params.id
         for (note of notesArr) {
             // if the note has an id that equals the id of the url parameter
-            if (note.note_id == idParam) {
+            if (note.id == idParam) {
                 let i = notesArr.indexOf(note); // get the index of that note in the array
                 notesArr.splice(i, 1); // use the index to splice that note from the array
             }
@@ -92,6 +94,7 @@ app.delete('/api/notes/:id', (req, res) => {
 
         fs.writeFile('./db/db.json', newNotesArr, (err) => {
             err ? console.error(err) : console.log('deletion complete and db file written')
+            res.send('note deleted');
         });
     });
 });
